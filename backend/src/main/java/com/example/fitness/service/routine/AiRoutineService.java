@@ -1,9 +1,6 @@
 package com.example.fitness.service.routine;
 
 import com.example.fitness.dto.routine.RoutineDto;
-import com.example.fitness.repository.routine.MasterExerciseRepository;
-import com.example.fitness.repository.routine.RoutineRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.stereotype.Service;
@@ -32,9 +29,9 @@ public class AiRoutineService {
         return this.chatClient.prompt()
                 .system("당신은 전문 피트니스 트레이너입니다. 사용자의 조건에 맞는 최적의 운동 루틴을 JSON 형식으로 제공해야 합니다.")
                 .user(u -> u.text("운동 목표: {goal}, 수준: {level}, 장비: {equipment}")
-                        .param("goal", dto.goal().getDescription())
-                        .param("level", dto.level().getDescription())
-                        .param("equipment", dto.equipmentType().getDescription()))
+                        .param("goal", dto.goal())
+                        .param("level", dto.level())
+                        .param("equipment", dto.equipmentType()))
                 .call()
                 .entity(RoutineDto.AiResponse.class);
     }

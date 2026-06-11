@@ -4,8 +4,6 @@ package com.example.fitness.controller;
 import com.example.fitness.dto.routine.RoutineDto;
 import com.example.fitness.service.routine.AiRoutineService;
 import com.example.fitness.service.routine.RoutineService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,12 +18,6 @@ public class RoutineController {
     private final RoutineService routineService;
     private final AiRoutineService aiRoutineService;
 
-    // 화면 1용 API
-    // 1. 기초 데이터 조회 (목표/수준/장비 리스트)
-    @GetMapping("/api/routines/basic-data")
-    public ResponseEntity<RoutineDto.BasicDataResponse> getBasicData() {
-        return ResponseEntity.ok(routineService.getBasicData());
-    }
 
     // 2. AI 루틴 추천
     @GetMapping("/api/routines/recommend")

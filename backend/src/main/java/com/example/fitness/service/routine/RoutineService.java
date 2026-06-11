@@ -4,9 +4,6 @@ import com.example.fitness.dto.routine.RoutineDto;
 import com.example.fitness.entity.User;
 import com.example.fitness.entity.routine.Routine;
 import com.example.fitness.entity.routine.RoutineExercise;
-import com.example.fitness.entity.routine.enums.EquipmentType;
-import com.example.fitness.entity.routine.enums.WorkoutGoal;
-import com.example.fitness.entity.routine.enums.WorkoutLevel;
 import com.example.fitness.repository.UserRepository;
 import com.example.fitness.repository.routine.MasterExerciseRepository;
 import com.example.fitness.repository.routine.RoutineRepository;
@@ -27,14 +24,6 @@ public class RoutineService {
     private final RoutineRepository routineRepository;
     private final MasterExerciseRepository masterExerciseRepository;
 
-    // 1. 기초 데이터 (Enum)
-    public RoutineDto.BasicDataResponse getBasicData() {
-        return new RoutineDto.BasicDataResponse(
-                Arrays.stream(WorkoutGoal.values()).map(WorkoutGoal::getDescription).toList(),
-                Arrays.stream(WorkoutLevel.values()).map(WorkoutLevel::getDescription).toList(),
-                Arrays.stream(EquipmentType.values()).map(EquipmentType::getDescription).toList()
-        );
-    }
 
     // 2. 루틴 저장 / 추가
     @Transactional
