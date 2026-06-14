@@ -8,18 +8,18 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // JWT 로그인 및 중복 확인 시 사용
+    // 로그인 및 대상 회원 조회 시 사용
     Optional<User> findByUsername(String username);
 
-    // 💡 중복 확인 전용 메서드 (있으면 true, 없으면 false 반환)
+    // 회원가입 및 실시간 중복 체크 시 사용
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
-    // 아이디 찾기
-    Optional<User> findByNameAndEmailAndFindPasswordQuestionIdAndFindPasswordAnswer(
-            String name, String email, Long questionId, String answer);
+    // 💡 아이디 찾기: 이메일 + 질문 번호 + 답변으로 조회
+    Optional<User> findByEmailAndFindPasswordQuestionIdAndFindPasswordAnswer(
+            String email, Long questionId, String answer);
 
-    // 비밀번호 재설정
-    Optional<User> findByUsernameAndNameAndEmailAndFindPasswordQuestionIdAndFindPasswordAnswer(
-            String username, String name, String email, Long questionId, String answer);
+    // 💡 비밀번호 재설정 1단계: 아이디 + 질문 번호 + 답변으로 검증 조회
+    Optional<User> findByUsernameAndFindPasswordQuestionIdAndFindPasswordAnswer(
+            String username, Long questionId, String answer);
 }
