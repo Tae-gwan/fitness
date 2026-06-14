@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from '@/components/ui/Navbar';
 import Dashboard from '@/pages/Dashboard';
+import LandingPage from '@/pages/LandingPage';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -10,6 +11,7 @@ import RoutinePage from '@/pages/RoutinePage';
 import PlaceholderPage from '@/pages/Placeholder';
 import { RoutineProvider } from '@/context/RoutineContext';
 import { AuthProvider } from '@/context/AuthContext';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 function App() {
   return (
@@ -20,16 +22,20 @@ function App() {
           <Navbar />
           <main className="flex-1 flex flex-col">
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot" element={<ForgotPassword />} />
-              <Route path="/meal/add" element={<AddMeal />} />
-              <Route path="/exercise/recommend" element={<RecommendationPage />} />
-              <Route path="/exercise/routines" element={<RoutinePage />} />
-              <Route path="/community" element={<PlaceholderPage title="커뮤니티" />} />
-              <Route path="/community/routines" element={<PlaceholderPage title="루틴 공유" />} />
-              <Route path="/community/mates" element={<PlaceholderPage title="운동 메이트" />} />
+
+              {/* Protected Routes */}
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/meal/add" element={<ProtectedRoute><AddMeal /></ProtectedRoute>} />
+              <Route path="/exercise/recommend" element={<ProtectedRoute><RecommendationPage /></ProtectedRoute>} />
+              <Route path="/exercise/routines" element={<ProtectedRoute><RoutinePage /></ProtectedRoute>} />
+              <Route path="/community" element={<ProtectedRoute><PlaceholderPage title="커뮤니티" /></ProtectedRoute>} />
+              <Route path="/community/routines" element={<ProtectedRoute><PlaceholderPage title="루틴 공유" /></ProtectedRoute>} />
+              <Route path="/community/mates" element={<ProtectedRoute><PlaceholderPage title="운동 메이트" /></ProtectedRoute>} />
             </Routes>
           </main>
         </div>

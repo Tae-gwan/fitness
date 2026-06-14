@@ -13,38 +13,40 @@ export default function Navbar() {
           </div>
           <span>AI-Fit</span>
         </Link>
-        <div className="flex items-center gap-6 text-sm font-medium text-zinc-300">
-          <Link to="/" className="hover:text-neon-400 transition-colors">대시보드</Link>
-          <Link to="/meal/add" className="hover:text-neon-400 transition-colors">식단 관리</Link>
-          <Link to="/exercise/recommend" className="hover:text-neon-400 transition-colors">AI 루틴</Link>
-          <Link to="/exercise/routines" className="hover:text-neon-400 transition-colors">나의 루틴</Link>
-          
-          <div className="relative group py-5">
-            <Link to="/community" className="flex items-center gap-1 hover:text-neon-400 transition-colors">
-              커뮤니티
-            </Link>
+        {isLoggedIn && (
+          <div className="flex items-center gap-6 text-sm font-medium text-zinc-300">
+            <Link to="/dashboard" className="hover:text-neon-400 transition-colors">대시보드</Link>
+            <Link to="/meal/add" className="hover:text-neon-400 transition-colors">칼로리 계산</Link>
+            <Link to="/exercise/recommend" className="hover:text-neon-400 transition-colors">AI 루틴</Link>
+            <Link to="/exercise/routines" className="hover:text-neon-400 transition-colors">나의 루틴</Link>
             
-            {/* Dropdown Menu */}
-            <div className="absolute top-[calc(100%-8px)] left-1/2 -translate-x-1/2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl flex flex-col p-2">
-                <Link 
-                  to="/community/routines" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 hover:text-neon-400 transition-colors text-zinc-300"
-                >
-                  <ClipboardList size={16} />
-                  <span>루틴 공유</span>
-                </Link>
-                <Link 
-                  to="/community/mates" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 hover:text-neon-400 transition-colors text-zinc-300"
-                >
-                  <UserPlus size={16} />
-                  <span>운동 메이트 모집</span>
-                </Link>
+            <div className="relative group py-5">
+              <Link to="/community" className="flex items-center gap-1 hover:text-neon-400 transition-colors">
+                커뮤니티
+              </Link>
+              
+              {/* Dropdown Menu */}
+              <div className="absolute top-[calc(100%-8px)] left-1/2 -translate-x-1/2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl flex flex-col p-2">
+                  <Link 
+                    to="/community/routines" 
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 hover:text-neon-400 transition-colors text-zinc-300"
+                  >
+                    <ClipboardList size={16} />
+                    <span>루틴 공유</span>
+                  </Link>
+                  <Link 
+                    to="/community/mates" 
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-zinc-800 hover:text-neon-400 transition-colors text-zinc-300"
+                  >
+                    <UserPlus size={16} />
+                    <span>운동 메이트 모집</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
         <div className="flex items-center gap-4 text-sm font-medium">
           {isLoggedIn ? (
             <>
