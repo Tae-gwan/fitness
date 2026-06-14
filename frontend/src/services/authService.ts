@@ -9,8 +9,9 @@ export const login = async (username: string, password: string) => {
       password,
     });
     
-    // 친구 백엔드 응답 형태: { token: "JWT문자열" }
+    // 친구 백엔드 응답 형태: { token: "JWT문자열", name: "홍길동" }
     const token = response.data.token || response.data;
+    const name = response.data.name || username;
     
     return {
       ok: true,
@@ -20,7 +21,7 @@ export const login = async (username: string, password: string) => {
         id: "user",
         username: username,
         email: "",
-        ownerName: username,
+        ownerName: name,
       },
     };
   } catch (error: any) {
