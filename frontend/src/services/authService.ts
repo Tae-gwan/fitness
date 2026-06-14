@@ -57,10 +57,11 @@ export const verifyEmailCode = async (email: string, code: string, type: string)
 export const signup = async (data: any, signupToken: string): Promise<{ok: boolean, message?: string}> => {
   try {
     const response = await axios.post(`${API_URL}/auth/signup`, {
-      username: data.userName, // 프론트의 userName 필드를 백엔드의 username 필드에 맵핑
+      username: data.userName,
       password: data.password,
-      email: data.email,
       name: data.name,
+      securityQuestion: data.securityQuestion,
+      securityAnswer: data.securityAnswer,
     });
     
     return { ok: true, message: response.data }; // "회원가입 성공"
