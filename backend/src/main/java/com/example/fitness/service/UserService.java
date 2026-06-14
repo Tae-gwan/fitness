@@ -1,5 +1,6 @@
 package com.example.fitness.service;
 
+import com.example.fitness.config.JwtTokenProvider; // 💡 프로젝트의 올바른 패키지 경로로 확인해주세요
 import com.example.fitness.entity.User;
 import com.example.fitness.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,14 +13,29 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder; // SecurityConfig의 인코더 주입
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider; // 💡 JWT 토큰 발행을 위해 주입 추가
 
-    // 💡 1. 아이디 중복 확인
+    // 💡 [복구] 로그인 로직 (아이디, 비밀번호 확인 후 JWT 토큰 반환)
+    public String login(String username, String password) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
+
+        // 암호화된 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 비밀번호가 맞으면 JWT 토큰 발행 및 반환
+        return jwtTokenProvider.createToken(user.getUsername());
+    }
+
+    // 아이디 중복 확인
     public boolean checkUsernameDuplicate(String username) {
         return userRepository.existsByUsername(username);
     }
 
-    // 💡 2. 회원가입 (비밀번호 암호화 및 아이디/이메일 중복 최종 방어)
+    // 회원가입
     @Transactional
     public void registerUser(String username, String password, String name, String email, Long questionId, String answer) {
         if (userRepository.existsByUsername(username)) {
@@ -31,7 +47,7 @@ public class UserService {
 
         User user = User.builder()
                 .username(username)
-                .password(passwordEncoder.encode(password)) // BCrypt 암호화 적용
+                .password(passwordEncoder.encode(password))
                 .name(name)
                 .email(email)
                 .findPasswordQuestionId(questionId)
@@ -41,25 +57,25 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // 💡 3. 아이디 찾기 (이메일 + 질문답변 기반)
+    // 아이디 찾기
     public String findUsername(String email, Long questionId, String answer) {
         User user = userRepository.findByEmailAndFindPasswordQuestionIdAndFindPasswordAnswer(email, questionId, answer)
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보가 없습니다."));
         return user.getUsername();
     }
 
-    // 💡 4. 비밀번호 재설정 1단계: 질문/답변 검증
+    // 비밀번호 재설정 1단계: 검증
     public void verifyPasswordReset(String username, Long questionId, String answer) {
         userRepository.findByUsernameAndFindPasswordQuestionIdAndFindPasswordAnswer(username, questionId, answer)
                 .orElseThrow(() -> new IllegalArgumentException("입력하신 비밀번호 찾기 질문과 답변이 일치하지 않습니다."));
     }
 
-    // 💡 5. 비밀번호 재설정 2단계: 최종 비밀번호 변경
+    // 비밀번호 재설정 2단계: 변경
     @Transactional
     public void changePassword(String username, String newPassword) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        user.setPassword(passwordEncoder.encode(newPassword)); // 변경 시에도 암호화 적용
+        user.setPassword(passwordEncoder.encode(newPassword));
     }
 }
