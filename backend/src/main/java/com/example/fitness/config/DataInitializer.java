@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset; // 💡 차셋 임포트 추가
+import java.nio.charset.StandardCharsets; // 💡 UTF_8을 깔끔하게 쓰기 위한 임포트 추가
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,79 +23,83 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // 이미 DB에 데이터가 있다면 초기화를 건너뜁니다.
         if (foodRepository.count() > 0) {
-            log.info("====== 이미 음식 데이터셋이 존재하므로 자동 초기화를 건너뜁니다 ======");
+            log.info("====== 이미 200개 정제 데이터셋이 존재하므로 자동 초기화를 건너뜁니다 ======");
             return;
         }
 
-        log.info("====== 공공데이터셋(data1, data2) 자동 초기화를 시작합니다. ======");
+        log.info("====== [UTF-8 청정 모드] 200개 핵심 데이터셋 초기화를 시작합니다! ======");
 
-        String[] files = {"data1.csv", "data2.csv"};
+        String fileName = "data1.csv";
         List<Food> foodBatchList = new ArrayList<>();
+        ClassPathResource resource = new ClassPathResource(fileName);
 
-        for (String fileName : files) {
-            ClassPathResource resource = new ClassPathResource(fileName);
+        if (!resource.exists()) {
+            log.error("❌ resources 폴더에 {} 파일이 존재하지 않습니다!", fileName);
+            return;
+        }
 
-            if (!resource.exists()) {
-                log.warn("{} 파일이 resources 폴더에 없습니다. 건너뜁니다.", fileName);
-                continue;
-            }
+        // 💡 StandardCharsets.UTF_8을 명시하여 새로 드린 200개 파일이 깨지지 않고 한글로 읽히게 합니다.
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            br.readLine(); // 맨 상단 헤더(식품명, 제조사...) 한 줄 건너뛰기
 
-            // 💡 인코딩을 StandardCharsets.UTF_8에서 한국 공공데이터 전용인 "EUC-KR"로 수정합니다.
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream(), Charset.forName("EUC-KR")))) {
-                String line;
-                br.readLine(); // 헤더 건너뛰기
+            int lineCount = 1;
+            while ((line = br.readLine()) != null) {
+                lineCount++;
+                if (line.trim().isEmpty()) continue;
 
-                while ((line = br.readLine()) != null) {
-                    if (line.trim().isEmpty()) continue;
+                // 예외가 발생해도 다음 줄로 부드럽게 넘어가도록 개별 행마다 try-catch 처리
+                try {
+                    String[] tokens = line.split(",");
 
-                    String[] tokens = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-
-                    if (tokens.length < 6) {
-                        tokens = line.split(";");
-                        if (tokens.length < 6) continue;
-                    }
-
-                    try {
-                        String name = tokens[0].replace("\"", "").trim();
-                        String size = tokens[1].replace("\"", "").trim();
-
-                        double calories = parseDoubleSafely(tokens[2]);
-                        double protein = parseDoubleSafely(tokens[3]);
-                        double fat = parseDoubleSafely(tokens[4]);
-                        double carbs = parseDoubleSafely(tokens[5]);
-
-                        Food food = Food.builder()
-                                .foodName(name)
-                                .servingSizeString(size)
-                                .calories(calories)
-                                .protein(protein)
-                                .fat(fat)
-                                .carbohydrates(carbs)
-                                .build();
-
-                        foodBatchList.add(food);
-
-                    } catch (Exception e) {
+                    // 칼로리, 탄단지가 위치한 최소 8개의 열이 확보되지 않은 깨진 줄은 통과
+                    if (tokens == null || tokens.length < 8) {
                         continue;
                     }
+
+                    String name = tokens[0].trim();   // 식품명
+                    String size = tokens[3].trim();   // 1회제공량
+
+                    double calories = parseDoubleSafely(tokens[4]); // 에너지(kcal)
+                    double protein  = parseDoubleSafely(tokens[5]); // 단백질(g)
+                    double fat      = parseDoubleSafely(tokens[6]); // 지방(g)
+                    double carbs    = parseDoubleSafely(tokens[7]); // 탄수화물(g)
+
+                    if (name.isEmpty()) continue;
+
+                    Food food = Food.builder()
+                            .foodName(name)
+                            .servingSizeString(size)
+                            .calories(calories)
+                            .protein(protein)
+                            .fat(fat)
+                            .carbohydrates(carbs)
+                            .build();
+
+                    foodBatchList.add(food);
+
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    log.warn("⚠️ {}번째 행에서 데이터 잘림 발생 (건너뜁니다) -> 내용: {}", lineCount, line);
+                } catch (Exception e) {
+                    continue;
                 }
-                log.info("{} 파일 파싱 완료! (현재까지 쌓인 데이터 수: {}개)", fileName, foodBatchList.size());
             }
         }
 
         if (!foodBatchList.isEmpty()) {
             foodRepository.saveAll(foodBatchList);
-            log.info("====== 총 {}개의 공공데이터셋이 성공적으로 DB에 저장되었습니다! ======", foodRepository.count());
+            log.info("====== 총 {}개의 엄선된 식단 데이터가 DB에 정상 저장되었습니다! ======", foodRepository.count());
         }
     }
 
     private double parseDoubleSafely(String value) {
-        if (value == null || value.replace("\"", "").trim().isEmpty()) {
+        if (value == null || value.trim().isEmpty()) {
             return 0.0;
         }
         try {
-            return Double.parseDouble(value.replace("\"", "").trim());
+            return Double.parseDouble(value.trim());
         } catch (NumberFormatException e) {
             return 0.0;
         }
