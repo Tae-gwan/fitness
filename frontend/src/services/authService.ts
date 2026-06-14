@@ -4,12 +4,13 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export const login = async (username: string, password: string) => {
   try {
-    const response = await axios.post(`${API_URL}/auth/login`, {
+    const response = await axios.post(`${API_URL}/users/login`, {
       username,
       password,
     });
     
-    const token = response.data;
+    // 친구 백엔드 응답 형태: { token: "JWT문자열" }
+    const token = response.data.token || response.data;
     
     return {
       ok: true,
