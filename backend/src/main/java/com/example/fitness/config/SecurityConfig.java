@@ -28,9 +28,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 💡 여기에 /api/foods/ 로 시작하는 모든 요청을 허용하도록 추가했습니다.
+                        // 💡 기존 로그인/회원가입 경로 허용
                         .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+
+                        // 💡 [새로 추가] 유저 도메인 관련 기능들을 로그인 없이 접근할 수 있도록 전체 허용
+                        // (/api/users/check-username, /api/users/signup, /api/users/find-id, /api/users/reset-password)
+                        .requestMatchers("/api/users/**").permitAll()
+
+                        // 식품 검색 API 허용
                         .requestMatchers("/api/foods/**").permitAll()
+
+                        // 그 외의 모든 요청은 JWT 인증 필요
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
