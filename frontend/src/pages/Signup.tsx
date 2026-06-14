@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { User, Lock, UserCircle, ArrowRight, CheckCircle2, ShieldQuestion, KeyRound } from "lucide-react";
+import { User, Lock, UserCircle, ArrowRight, CheckCircle2, ShieldQuestion, KeyRound, Mail } from "lucide-react";
 
 import AuthInput from "@/components/ui/AuthInput";
 import AuthButton from "@/components/ui/AuthButton";
@@ -20,17 +20,46 @@ export default function Signup() {
 
         <form className="space-y-6" onSubmit={form.handleSubmit}>
           <div className="space-y-4">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <AuthInput
+                  label="아이디"
+                  icon={User}
+                  name="username"
+                  type="text"
+                  required
+                  placeholder="아이디 입력"
+                  value={form.data.username}
+                  onChange={form.handleChange}
+                  error={form.errors.username}
+                  success={form.success.username}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={actions.checkIdDuplicate}
+                disabled={status.isIdChecking || !form.data.username}
+                className={`h-[52px] px-4 rounded-xl text-sm font-bold transition-all whitespace-nowrap mb-[2px] ${
+                  status.isIdChecking || !form.data.username
+                    ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                    : "bg-zinc-800 text-white hover:bg-zinc-700 active:scale-95"
+                }`}
+              >
+                {status.isIdChecking ? "확인 중..." : "중복확인"}
+              </button>
+            </div>
+
             <AuthInput
-              label="아이디"
-              icon={User}
-              name="username"
-              type="text"
+              label="이메일"
+              icon={Mail}
+              name="email"
+              type="email"
               required
-              placeholder="아이디 입력"
-              value={form.data.username}
+              placeholder="example@mail.com"
+              value={form.data.email}
               onChange={form.handleChange}
-              error={form.errors.username}
-              success={form.success.username}
+              error={form.errors.email}
+              success={form.success.email}
             />
 
             <AuthInput

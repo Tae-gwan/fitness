@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  validateEmail,
   validatePassword,
   validateConfirmPassword,
   isRequired,
@@ -15,6 +16,7 @@ export const useSignupForm = () => {
 
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     password: "",
     confirmPassword: "",
     ownerName: "",
@@ -110,7 +112,7 @@ export const useSignupForm = () => {
         return newErrors;
       });
     } else {
-      setErrors((prev) => ({ ...prev, username: result.message || "아이디 중복 확인 중 오류가 발생했습니다." }));
+      setErrors((prev) => ({ ...prev, username: result.message || "이미 사용 중인 아이디입니다." }));
     }
     setIsIdChecking(false);
   };
@@ -119,6 +121,7 @@ export const useSignupForm = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!isRequired(formData.username)) newErrors.username = "아이디를 입력해 주세요.";
+    if (!validateEmail(formData.email)) newErrors.email = "올바른 이메일 형식이 아닙니다.";
     if (!validatePassword(formData.password)) newErrors.password = "영문, 숫자, 특수문자 포함 8자 이상 입력해 주세요.";
     if (!validateConfirmPassword(formData.password, formData.confirmPassword)) newErrors.confirmPassword = "비밀번호가 일치하지 않습니다.";
     if (!isRequired(formData.ownerName)) newErrors.ownerName = "이름을 입력해 주세요.";
@@ -135,6 +138,7 @@ export const useSignupForm = () => {
     setIsLoading(true);
     const result = await signup({
       userName: formData.username,
+      email: formData.email,
       password: formData.password,
       name: formData.ownerName,
       securityQuestionId: Number(formData.securityQuestionId),

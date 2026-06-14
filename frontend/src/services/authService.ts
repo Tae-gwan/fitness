@@ -2,9 +2,6 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
-// 유틸리티: 임의의 딜레이(가짜 통신 지연)를 생성하는 함수
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export const login = async (username: string, password: string) => {
   try {
     const response = await axios.post(`${API_URL}/auth/login`, {
@@ -12,15 +9,12 @@ export const login = async (username: string, password: string) => {
       password,
     });
     
-    // 백엔드에서 토큰을 문자열로 반환함
     const token = response.data;
     
     return {
       ok: true,
       accessToken: token,
-      // Refresh Token은 백엔드 구현 전까지 더미로 둡니다
       refreshToken: "dummy-refresh-token",
-      // 현재 백엔드에서 유저 상세 정보를 안 주므로 임시 맵핑
       user: {
         id: "user",
         username: username,
@@ -37,38 +31,62 @@ export const login = async (username: string, password: string) => {
 };
 
 export const checkIdAvailability = async (username: string) => {
-  await delay(500);
-  // 아직 백엔드 API 없음 - 무조건 통과
+  try {
+    const response = await axios.get(`${API_URL}/users/check-username?username=${username}`);
+    return { ok: true, message: response.data };
+  } catch (error: any) {
+    return { ok: false, message: error.response?.data || "이미 존재하는 아이디입니다." };
+  }
+};
+
+// 백엔드에 이메일 중복확인 API가 없으므로 임시로 무조건 통과시키는 Mock 함수 (UI에서 제거 예정)
+export const checkEmailAvailability = async (email: string) => {
   return { ok: true };
 };
 
-export const requestEmailVerification = async (email: string, type: string): Promise<{ok: boolean, message?: string}> => {
-  await delay(500);
-  // 아직 백엔드 API 없음 - 무조건 통과
-  return { ok: true };
+export const findId = async (data: { email: string, questionId: number, answer: string }) => {
+  try {
+    const response = await axios.post(`${API_URL}/users/find-id`, data);
+    return { ok: true, foundId: response.data };
+  } catch (error: any) {
+    return { ok: false, message: error.response?.data || "일치하는 회원 정보를 찾을 수 없습니다." };
+  }
 };
 
-export const verifyEmailCode = async (email: string, code: string, type: string) => {
-  await delay(500);
-  // 아직 백엔드 API 없음 - 무조건 통과
-  return { ok: true, signupToken: "fake-signup-token" };
+export const verifyResetAuth = async (data: { username: string, questionId: number, answer: string }) => {
+  try {
+    const response = await axios.post(`${API_URL}/users/verify-reset`, data);
+    return { ok: true, message: response.data };
+  } catch (error: any) {
+    return { ok: false, message: error.response?.data || "일치하는 회원 정보를 찾을 수 없습니다." };
+  }
+};
+
+export const resetPassword = async (data: { username: string, newPassword: string }) => {
+  try {
+    const response = await axios.post(`${API_URL}/users/change-password`, data);
+    return { ok: true, message: response.data };
+  } catch (error: any) {
+    return { ok: false, message: error.response?.data || "비밀번호 변경에 실패했습니다." };
+  }
 };
 
 export const signup = async (data: any, signupToken: string): Promise<{ok: boolean, message?: string}> => {
   try {
-    const response = await axios.post(`${API_URL}/auth/signup`, {
+    const response = await axios.post(`${API_URL}/users/signup`, {
       username: data.userName,
       password: data.password,
       name: data.name,
-      securityQuestion: data.securityQuestion,
-      securityAnswer: data.securityAnswer,
+      email: data.email,
+      questionId: data.securityQuestionId,
+      answer: data.securityAnswer,
     });
     
-    return { ok: true, message: response.data }; // "회원가입 성공"
+    return { ok: true, message: response.data }; 
   } catch (error: any) {
     return { 
       ok: false, 
-      message: error.response?.data?.message || "회원가입에 실패했습니다. (서버 오류 또는 중복된 아이디)" 
+      message: error.response?.data || "회원가입에 실패했습니다. (서버 오류 또는 중복된 아이디)" 
     };
   }
 };
