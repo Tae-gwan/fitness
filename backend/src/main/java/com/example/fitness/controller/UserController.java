@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -13,8 +16,24 @@ public class UserController {
 
     private final UserService userService;
 
-    // 💡 1. 아이디 중복 확인 API
-    // GET /api/users/check-username?username=유저아이디
+    // 💡 [복구] 1. 로그인 API
+    // POST /api/users/login
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            String token = userService.login(request.getUsername(), request.getPassword());
+
+            // 프론트엔드가 쓰기 편하게 JSON 형태로 토큰을 감싸서 반환합니다. {"token": "JWT문자열"}
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 2. 아이디 중복 확인 API
     @GetMapping("/check-username")
     public ResponseEntity<String> checkUsername(@RequestParam("username") String username) {
         boolean isDuplicate = userService.checkUsernameDuplicate(username);
@@ -24,8 +43,7 @@ public class UserController {
         return ResponseEntity.ok("사용 가능한 아이디입니다.");
     }
 
-    // 💡 2. 회원가입 API
-    // POST /api/users/signup
+    // 3. 회원가입 API
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody SignupRequest request) {
         try {
@@ -43,8 +61,7 @@ public class UserController {
         }
     }
 
-    // 💡 3. 아이디 찾기 API (이메일 + 질문답변)
-    // POST /api/users/find-id
+    // 4. 아이디 찾기 API
     @PostMapping("/find-id")
     public ResponseEntity<String> findId(@RequestBody FindIdRequest request) {
         try {
@@ -59,8 +76,7 @@ public class UserController {
         }
     }
 
-    // 💡 4. 비밀번호 재설정 1단계: 질문/답변 검증 API
-    // POST /api/users/verify-reset
+    // 5. 비밀번호 재설정 1단계: 검증 API
     @PostMapping("/verify-reset")
     public ResponseEntity<String> verifyReset(@RequestBody VerifyResetRequest request) {
         try {
@@ -75,8 +91,7 @@ public class UserController {
         }
     }
 
-    // 💡 5. 비밀번호 재설정 2단계: 최종 비밀번호 변경 API
-    // POST /api/users/change-password
+    // 6. 비밀번호 재설정 2단계: 최종 변경 API
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
         try {
@@ -88,6 +103,13 @@ public class UserController {
     }
 
     // --- 통신용 DTO 구조체 정의 ---
+
+    // 💡 로그인 DTO 추가
+    @Data
+    public static class LoginRequest {
+        private String username;
+        private String password;
+    }
 
     @Data
     public static class SignupRequest {
