@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { User, Mail, Phone, Lock, UserCircle, ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
+import { User, Lock, UserCircle, ArrowRight, CheckCircle2, ShieldQuestion, KeyRound, Mail } from "lucide-react";
 
 import AuthInput from "@/components/ui/AuthInput";
 import AuthButton from "@/components/ui/AuthButton";
 import { useSignupForm } from "@/hooks/useSignupForm";
 
 export default function Signup() {
-  const { form, emailAuth, status, actions } = useSignupForm();
+  const { form, status, actions } = useSignupForm();
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
@@ -14,24 +14,40 @@ export default function Signup() {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-white tracking-tight">회원가입</h2>
           <p className="mt-2 text-sm text-zinc-400 font-medium">
-            이메일 인증을 통해 체계적인 피트니스 관리를 시작하세요.
+            체계적인 피트니스 관리를 시작하세요.
           </p>
         </div>
 
         <form className="space-y-6" onSubmit={form.handleSubmit}>
           <div className="space-y-4">
-            <AuthInput
-              label="아이디"
-              icon={User}
-              name="username"
-              type="text"
-              required
-              placeholder="아이디 입력"
-              value={form.data.username}
-              onChange={form.handleChange}
-              error={form.errors.username}
-              success={form.success.username}
-            />
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <AuthInput
+                  label="아이디"
+                  icon={User}
+                  name="username"
+                  type="text"
+                  required
+                  placeholder="아이디 입력"
+                  value={form.data.username}
+                  onChange={form.handleChange}
+                  error={form.errors.username}
+                  success={form.success.username}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={actions.checkIdDuplicate}
+                disabled={status.isIdChecking || !form.data.username}
+                className={`h-[52px] px-4 rounded-xl text-sm font-bold transition-all whitespace-nowrap mb-[2px] ${
+                  status.isIdChecking || !form.data.username
+                    ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                    : "bg-zinc-800 text-white hover:bg-zinc-700 active:scale-95"
+                }`}
+              >
+                {status.isIdChecking ? "확인 중..." : "중복확인"}
+              </button>
+            </div>
 
             <AuthInput
               label="이메일"
@@ -47,15 +63,15 @@ export default function Signup() {
             />
 
             <AuthInput
-              label="휴대폰 번호"
-              icon={Phone}
-              name="phone"
-              type="tel"
+              label="이름"
+              icon={UserCircle}
+              name="ownerName"
+              type="text"
               required
-              placeholder="010-1234-5678"
-              value={form.data.phone}
+              placeholder="이름을 입력해주세요"
+              value={form.data.ownerName}
               onChange={form.handleChange}
-              error={form.errors.phone}
+              error={form.errors.ownerName}
             />
           </div>
 
@@ -92,17 +108,44 @@ export default function Signup() {
             </div>
           </div>
 
-          <div className="space-y-4 pt-4">
+          {/* Security Question Section */}
+          <div className="space-y-4 pt-4 border-t border-zinc-800/50 mt-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-zinc-300">
+                아이디/비밀번호 찾기 질문
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <ShieldQuestion className="h-5 w-5 text-zinc-500" />
+                </div>
+                <select
+                  name="securityQuestionId"
+                  value={form.data.securityQuestionId}
+                  onChange={form.handleChange}
+                  className="w-full bg-black border border-zinc-800 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium outline-none focus:border-neon-500 transition-all text-white appearance-none"
+                >
+                  <option value="1">출신 초등학교는 어디인가요?</option>
+                  <option value="2">태어난 동네는 어디인가요?</option>
+                  <option value="3">가장 좋아하는 동물은 무엇인가요?</option>
+                  <option value="4">반려동물의 이름은 무엇인가요?</option>
+                  <option value="5">나의 어릴 적 별명은 무엇인가요?</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-zinc-500 text-xs">
+                  ▼
+                </div>
+              </div>
+            </div>
+
             <AuthInput
-              label="이름"
-              icon={UserCircle}
-              name="ownerName"
+              label="질문 답변"
+              icon={KeyRound}
+              name="securityAnswer"
               type="text"
               required
-              placeholder="이름을 입력해주세요"
-              value={form.data.ownerName}
+              placeholder="답변을 입력해주세요"
+              value={form.data.securityAnswer}
               onChange={form.handleChange}
-              error={form.errors.ownerName}
+              error={form.errors.securityAnswer}
             />
           </div>
 

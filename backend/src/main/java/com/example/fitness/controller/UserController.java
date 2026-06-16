@@ -22,10 +22,12 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             String token = userService.login(request.getUsername(), request.getPassword());
+            String name = userService.getNameByUsername(request.getUsername());
 
-            // 프론트엔드가 쓰기 편하게 JSON 형태로 토큰을 감싸서 반환합니다. {"token": "JWT문자열"}
+            // 프론트엔드가 쓰기 편하게 JSON 형태로 토큰과 이름을 반환합니다.
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
+            response.put("name", name);
 
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {

@@ -30,6 +30,13 @@ public class UserService {
         return jwtTokenProvider.createToken(user.getUsername());
     }
 
+    // 아이디로 이름 조회
+    public String getNameByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(User::getName)
+                .orElse(username); // 이름을 못 찾으면 기본값으로 아이디 반환
+    }
+
     // 아이디 중복 확인
     public boolean checkUsernameDuplicate(String username) {
         return userRepository.existsByUsername(username);
